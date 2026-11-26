@@ -1,0 +1,57 @@
+import { createDecipheriv, createHash } from "node:crypto"
+import { inflateRawSync } from "node:zlib"
+
+const promptKey = createHash("sha256").update("GameCode protected prompt key v1").digest()
+
+const payloads = {
+  build:
+    "0Bo4gylmy95QZUlOCALVaK2OA13Rpn6qO14zHmN7XVsoBt0Iq834wdHOHiIp+B/G5XkMYSSvQYlJzejKc2o5esGbrgN7jKoUHL/mCMac8tvGc2GZ/XkrdzWaZTkXetfk8voZGDtdyCXiNN05Uvp1xfhwW4H/kT7c51vzW/DXeXMBpD0F5FrmncxBs0IKPhfOMcwl3xHfVkHN148hHfdEoZiSozVmEj7cEKub4usl9VhPRnaQgpgOn1OBGLvDFgT60DOFL3k8VNx++oAp9VjlopHrszyz2clMZ8sUoG2RAlc/M5VCF7T/SAoB51tYHw57B4Y/RZs/8bI+ZOH5TzixBXMg3+HpDdlARAsicNRceUQm6F3AFWi3pYRebnjAU1xhzdz0MVYq1jtV7ibHQloZbe+hlHVZL5YWpiqXMYNWThXSLbSeDWS/1xp/zzDuy4s8YRDP+NwKWQq37fR6z8beQnLWiLXlL1tC7vn/T3TWdpM+jisl0NI8/dZwc+I=",
+  guardrails:
+    "9Dw1NvIUiuklZ3CF39zS24sq+nCffun3GLDW9CmBkI65SBsmlOjU/YmPz+W+ttYF3YTSg6MmfRUCOk+uGOqu4GpgZqekmGuplTJs1B0L7b9x4xyQNv/jnG4zbIwybinrzexHEFC9wUXXmu+IohbgwfVvOcPzIKCRVUFVuYLn4DFe34dMrPzgiQ9sUXaJb8jQy6WwxfAGkCvbwlfIzV2xEmRLVOlLSpqzK3AiOM+Wg6gSQu6QA+OP3vKOnwUIDcUZVtvX9zusZWzDW+7LIahB9sFJT/g+lLrnv0zYWOEPI7jImmnyU9GJxlARem9ARk2N5627+UEFg3JPfSFOjd8EcZWqjKX5erplLGcFscWF8fZ5M410aR6ea5ZtwIOYLQ2QIdcp4N5QxaxIu2cijkgKHBCGUql3lBk2ZabSQ2ycDLj3zOiQdhgZAdKbTd1J/0PxeuCldw1mQsBELFqtS68Hc1CQI+F3NIlxRKag4o7Z5MjwQkEn0fx0kGqDkE/SdVEDL/VWeUtor5pBedpQBrA3shRAcw8SllbBHB5HLZy0kdD3cVV2NCW7ZlYZlUt32FQJshrnTcDc6/LhTQnZpDusAkk2xRPg5/ZzUwQuBElKPfyd01dWfgtNUcTxEJEuXYVj+dd2QOvEQdeVYW192wAggXP4rryR2ByF7GshRTNAFqa6vt+w6Dw2ncaf4MHRrngoQzRhdaVujzo/yPExH7DbzgnRKY4uNs0o5rUiaiF/clxjAF7yDnEKmlXxGy070Q1zhTuWQwKnpwAYL36UVPW9LVRajYdKWieiiOSkwGkqu+W8ozZ6pdMvJwWI/n+HbNG9YVSKoSaNuBgQGIpKIFD0rPuv2Ftw7nTp/m2AL5wVqr6j7IvpUXMBMbx1bhXmddTHG3pXCbmKjTmo1dTfWtFssS7NgUErxQsBysuPbrjCx18=",
+  handoff:
+    "H6i46WduYU5lMues54+bx4vFEY44Wpzx3Q1T4W4PFYebcPt12ub/E/U/eHa7Fa+TzVX03Jq0k1/5S6f3Zi1ePCV0GN+715hPucwfQj4qgCUfqZ9CgmKyl21kT021wZvvkzIUVde3ygsQWpRUfJzIVjRl3uDg8Qjr/0n9sHdyc2anXYy39VWIxM3Wa/60eOxJkq1RucxLxihYiVkZPTl0uSUlgzdqsDDndvLLuJikUukO7aQrmqCgu5QjGNpGoYHIfT57Sqf4gw7t0rHqrBByj48R96QS2pGPptImaJK1/fA3F7Qg+pCY94wJ0oDGUQx4wrItIFn/zdbRWL4JlzhnEx7E6EnGdO5badySgMQmiQ8uCvFNwWBvPW3poJB1y1GSvJIpYv4=",
+  explore:
+    "vX4gIXoyfOWSgn1DheSGeBmgeL+XFKSi4nl1kqkSassi2ULYUxLKCBmRHUZ0MCfgRebdrsOmT09R/9vfa0XAPhk95aG/TeWHPrCJgm6HlOxgczUyUR6xVfTk/+iDJO6tKqzzIg3NyovFxx+ftMVbguIvvbk6Fwx9FD4FZebyRVy6MN/sIXhTdIFf47uk/EAaBruymw+XBXMLJU6poIEmCUfNVVXtee2OhtJgLWjM7hhi8ognK2U=",
+  title:
+    "ZEWLvIyo68PP91XUdDcPomHHp4QQ8DXV56vjtExKe8Zzc8GSSBGNkVwrbYM8r0AXMuo7MsqoCGBu7NNezVbdytuTf3+RgX8pqjE+djFKGrThJS68zFaCZ0aRGzmLUmamxIMGMWpqtCFoo/jR+SAcCeNYB/KoHbd2OCo=",
+  summary:
+    "iHn3KmgvgZKp99gDUdvx7fl+kb0q7ujdk5jBpUKbQgHUbKs3aZtv+FKw5VpNZ0AsYGWfomJ2j7AFYKp+UcnOyVshmL4Cx+5akOpjBLdcisW4lXwp+gPz6DIiHvClDBPB2wnX5YLZRqXuLTnZ4vESd0iZTW1CzF0SC0LGtnH6OtK7cg==",
+  general:
+    "PmA6xobmygtXaAgOU4Wns+4makFuL0Gkt7j1I9AMwETwYkYckKpp7uFkx7LcO7NrD3LFGdjMelXLykia5XYN/p/aJBZiUVFPclKk6Hw7X5NqXwgeTxOiogZBZWaGAh1L2d5lrkxBAr1i1N5UJvoGqyg8FLqMxYbR5IV87dKnryXjOOJfTesSO9ZRI6dxLMFfofRzmrxTLVevuOl0XhrQWsr6q6aR3f9kWAOn/2naEwUFbShRQYU6GsEPxmE8wv7gUt71l0vH68C8CkYJ0X0UTrNyxn0=",
+  agent1:
+    "4x+JFnBOFDinWRfZ7Xl3b57XYGqZJOkZ5yp4jrp8TnueN0DdObQXsAOZMm+Cdgvh1o61/RZCTxLtXXk1MS/g6jEzqlbs3hzidf1Xj230WfPpfTya564FAvAdKmSlf5xedLZGdPwxdGIwjNB9EZyImXmqlhNzJQuuxdPrNV4IZUzTwNKLa0ORJI3dJ/7ZXlPhY5DtzCrSK4Gg9hJo5kpq1w==",
+  agent1Sub:
+    "EG+m3b4/jjFnmIvLuse8jnV3OpYqpXf8HzHhIdl6xJ2tKSNYa+fBtJyeUi/JV4U2vYAGXXfd3o99WOv4tgw8STHkFXFeeOzUfjapTvCFpKVMDwotUtg0yM0yGRH0NUJyCXObm9PNuge3HRFSwfFylefhPk0eC3R483is",
+  agent2:
+    "Db67CHmtMTEor9MCT9IT7SnLCSVFhX228tCV1qG+k5kl2esKH9GpH5T74qYJhL9mq9eJCvHTBJ1fHdn2GMA8bDV6UL1dksCKSpzsHxAZNIGnxE1SFUv91GA8r/tpxXc1AtUinwpwncd65UXS47pKGSvj0Jm5Ljbv4oOW1fetGRoJRFjJd8jN4h3Fu+6gQQcLSWnZ",
+  agent2Sub:
+    "XWjyuE+60i5+thHtKgt/lP0gatGC0PCOb98S0Q0l3ukfep8dJvLz10NDHFTX9vwOE6p1zDunxnIysdIZ0xHHYt5fytd0lk8t2cHH7QkvVWRlq1sjAIucDbKo8OfI21zKrkFG/BQWtakuZJPKvxLoXCnLdoFuYCbr9pQ=",
+  agent3:
+    "Zn/y89FnMoXIxFYNmErQkwRSeV+L0FSbP9bhxd/3mHeFQr0V3AbzdeAUnnVfqmDtA82jXEUf/dFAs5AhN5l6Gk4xRkz+0dD+tg4GY1oICZytjkZJ1uzCI+YO9pcG/K9g46EwhYWHx77CabgNIkVZbXECUScELazRxbuzVTQZzFjWoxzgX1Qe7KhFFj6IKg==",
+  agent3Sub:
+    "SR3WSN65yNfiQkDB7ixcd8vorrk9uv7y0Pdi9unUEZHc3JRRbSFW9PmTK8vIEglFyuMnZxsh7m9Onvq6THnnelH1plySSufkXurPxQ9B0k5r8ZcZKCC8cTfaIK2084mGyKYU2MHaEAjFNTRrvUcORNOcPokm",
+  agent4:
+    "Zvs1qw4hjBow6U4KA6iXdLNTKH4/6JjeWH3LZw+Z7nOmX6jnyfhKYzbkmRn5suMnFWOOdU3s+VdODZyiwbBarj/H30zi8b30mmuJY5FnN2gS+773/o7MLy+5H7QojCeaHIuW+xNqIM0o4z07asotvxkfQPBvIABM4sV2Rk5BQsvJhgXkNARnpbFqQ6hx3g==",
+  agent4Sub:
+    "FRUZoMCXcBXJc54r4/t1MiOy2thbVvlv3G5XuD+52byq5By+4Scdpi/FWQ1bWmBwZleAlk93LeMVwghTz78HUT2kOdIJBKmLmCddye9L0Z24gWskjdQ9yxwrh51J5eFsfMXOxZzSprdrd1RWC0rJ6EadZ6g0Q4f/AInlh7OG4i3eB0wBbso=",
+  agent5:
+    "Kkl67fvEdOBpTxkgvpegGMmYCw3KtkQ45k7Lf4O/dohPMyVios6XqVpPzFyIxNZgFzF9JEKOr5iDUlCW8Zk/DqnQ6d2v6stbBbrPP3X4qcC0umg6fkLVunQlrIqMfk4YfkUIP4qWh4s/W7zn+bsgmQyd/1JwAFm8KS2uSVaTQlHvbCquKRArq6rG1qO/djg+E9hxlczhnjw=",
+  agent5Sub:
+    "NHnzREcS9gXOYcdyotIuAN75yFYOq2L8OEX6MnO2A86RE/S37HqZdU0T+3QnPv6XVBxlUaQcLC6iWFFeYVcoYjwpgty2R5eGIRKf5v4lEpajXS8BRglWv8uzwjdFk7b5x0uKLKh+kxvov4uoOxYguJbtFV7ZZoZUxcfJ8g==",
+  plan: "0s+9bH7OLFDrb/g15fccGimn/pLm9ZQC4PauYN8tDpYGc7twD+AazUSJ6T50mAIqacY2PdMhap1u3CpZfuM33H59UL60Rxsq4bCkOuQUsytRVTWDtAMsyoyU8hQj8+7vIlf5VALnNIkyoe3nodQ3p/pJAV1NMT79X5gcxGKdXGYJ2ywXCEGfpfYcW9Svp20cXCPooUjI3n0lssTU1H1gAgAhFlq6x6cmfHgioy5TBDoJqFz+pk/QQRX4YI0vUldkYNdyDwX6ukAJAScMC1d1SZfzpEe5VMAvi/k1G1XFwcWDWyTH89XIn2tIYa/Lh7F3RlQqOj3iUVMLzqHVBgs/ZS8AOIvBDmrPbJdweS1m1cRppEe4",
+} as const
+
+export type PromptID = Exclude<keyof typeof payloads, "guardrails" | "handoff">
+
+export function decrypt(id: PromptID) {
+  const prompt = decryptPayload(id)
+  if (id === "title" || id === "summary") return prompt
+  return `${prompt}\n\n${decryptPayload("guardrails")}\n\n${decryptPayload("handoff")}`
+}
+
+function decryptPayload(id: keyof typeof payloads) {
+  const payload = Buffer.from(payloads[id], "base64")
+  const decipher = createDecipheriv("aes-256-gcm", promptKey, payload.subarray(0, 12))
+  decipher.setAuthTag(payload.subarray(12, 28))
+  return inflateRawSync(Buffer.concat([decipher.update(payload.subarray(28)), decipher.final()])).toString("utf8")
+}

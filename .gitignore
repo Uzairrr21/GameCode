@@ -1,0 +1,30 @@
+# Secrets and local environment
+.env
+.env.*
+!.env.example
+.direnv/
+
+# Dependencies and generated build output
+node_modules/
+dist/
+dist-node/
+ts-dist/
+target/
+a.out
+.turbo/
+.typecheck-profiles/
+.cache/
+.bun-cache/
+*.bun-build
+tsconfig.tsbuildinfo
+
+# Local machine and temporary files
+.DS_Store
+*~
+.worktrees/
+tmp/
+logs/
+Session.vim
+
+# Legal drafts pending review are kept outside the repository; never copy them in.
+legal-drafts-private/
