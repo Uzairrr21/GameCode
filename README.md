@@ -10,7 +10,7 @@ GameCode is a customized version of the open-source [OpenCode](https://github.co
 
 ## Get GameCode for Windows
 
-**[Download the GameCode Windows installer](packages/desktop/dist/GameCode-win-x64.exe)**
+**[Download the GameCode Windows installer](https://github.com/Uzairrr21/GameCode/releases/latest/download/GameCode-win-x64.exe)**
 
 ### Install and start
 
